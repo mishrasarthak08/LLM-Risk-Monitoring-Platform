@@ -1,0 +1,10 @@
+# Versioned thresholds for regression pass/fail and drift alerting
+# Documented and managed as config rather than hardcoded
+
+regression:
+  pass_threshold: 0.7
+
+drift:
+  psi:
+    moderate_shift: 0.10
+    significant_shift: 0.25
