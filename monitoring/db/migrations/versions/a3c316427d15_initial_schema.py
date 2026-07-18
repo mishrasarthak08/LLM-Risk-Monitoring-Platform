@@ -1,14 +1,14 @@
 """Initial schema
 
 Revision ID: a3c316427d15
-Revises: 
+Revises:
 Create Date: 2026-07-10 14:20:33.734898
 
 """
+import os
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
@@ -17,8 +17,6 @@ down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-
-import os
 
 def upgrade() -> None:
     """Upgrade schema."""

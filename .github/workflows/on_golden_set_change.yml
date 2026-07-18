@@ -1,0 +1,51 @@
+name: Golden Set Review Workflow
+on:
+  pull_request:
+    paths:
+      - 'monitoring/golden_set/data/**'
+
+jobs:
+  golden-set-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Need history to find previous golden set version
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Identify Old and New Versions
+        id: files
+        run: |
+          # Finds the newest file in the PR branch
+          NEW_FILE=$(ls -t monitoring/golden_set/data/*.jsonl | head -n 1)
+          
+          # Find the newest file in the base branch (main)
+          git checkout ${{ github.event.pull_request.base.sha }}
+          OLD_FILE=$(ls -t monitoring/golden_set/data/*.jsonl | head -n 1)
+          
+          # Go back to PR branch
+          git checkout ${{ github.sha }}
+          
+          echo "old_file=$OLD_FILE" >> $GITHUB_ENV
+          echo "new_file=$NEW_FILE" >> $GITHUB_ENV
+
+      - name: Run Diff Script
+        id: diff
+        run: |
+          # Note: this relies on the python modules being available in PYTHONPATH
+          export PYTHONPATH="."
+          python ci/golden_set_diff.py --old ${{ env.old_file }} --new ${{ env.new_file }} > diff_output.md
+          
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: diff_output.md
+          comment_tag: golden_set_diff

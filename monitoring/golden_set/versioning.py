@@ -1,6 +1,7 @@
 import hashlib
 import json
 
+
 def content_hash(payload: str | dict) -> str:
     """Canonical content hash. For dicts, sort keys so semantically
     identical JSON in different key order hashes the same."""

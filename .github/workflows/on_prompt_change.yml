@@ -1,0 +1,59 @@
+name: LLM Regression Gate
+on:
+  pull_request:
+    paths:
+      - 'app/feature/prompts/**'
+      - 'app/feature/model_config.yaml'
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        
+      - name: Run regression suite against staging
+        run: |
+          export PYTHONPATH="."
+          
+          # In a real environment, baseline would point to the deployed config.
+          # Here we just mock it using the same file for demonstration.
+          python -c "
+          import json
+          from monitoring.regression.runner import run_regression_suite
+          
+          results = run_regression_suite(
+              golden_set_path='monitoring/golden_set/data/v0001_credit_memo.jsonl',
+              baseline_prompt_path='app/feature/prompts/credit_memo_v1.yaml',
+              candidate_prompt_path='app/feature/prompts/credit_memo_v1.yaml',
+              rubric_path='monitoring/judge/rubric/credit_memo_rubric_v2.yaml',
+              repeats=1
+          )
+          
+          with open('regression_output.json', 'w') as f:
+              json.dump(results, f)
+              
+          if results['gate_decision']['decision'] == 'block':
+              exit(1)
+          "
+          
+      - name: Generate Report
+        if: always() # Run even if the previous step failed
+        run: |
+          export PYTHONPATH="."
+          python monitoring/regression/report_builder.py --data-file regression_output.json --output-file regression_report.md
+          
+      - name: Comment PR
+        if: always()
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: regression_report.md
+          comment_tag: regression_report

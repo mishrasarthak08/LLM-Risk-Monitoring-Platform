@@ -1,10 +1,28 @@
-# Versioned thresholds for regression pass/fail and drift alerting
-# Documented and managed as config rather than hardcoded
+# Thresholds for Calibration (Phase 4) and Drift (Phase 6)
+# Each dimension specifies the minimum Cohen's kappa agreement required against human labels.
 
-regression:
-  pass_threshold: 0.7
+factual_accuracy:
+  min_kappa: 0.7
+  scale_type: "binary"
 
-drift:
-  psi:
-    moderate_shift: 0.10
-    significant_shift: 0.25
+policy_compliance:
+  min_kappa: 0.8
+  scale_type: "binary"
+
+completeness:
+  min_kappa: 0.7
+  scale_type: "binary"
+
+reasoning_quality:
+  min_kappa: 0.6
+  scale_type: "ordinal"
+
+tone_clarity:
+  min_kappa: 0.55
+  scale_type: "ordinal"
+
+drift_thresholds:
+  psi_warning: 0.1
+  psi_critical: 0.25
+  output_length_ks_p_value: 0.05
+  refusal_rate_z_p_value: 0.05
