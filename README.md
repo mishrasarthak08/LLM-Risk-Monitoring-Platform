@@ -18,7 +18,7 @@ flowchart TD
     subgraph "Loop 1: Production Inference"
         User[User / Application]
         Feature[Credit Memo Generator\n@traced_call]
-        LLM[Anthropic API]
+        LLM[Gemini API]
     end
 
     subgraph "Loop 2: Change-Triggered Regression (CI)"
@@ -73,7 +73,7 @@ This project moves beyond simple "LLM wrappers" by implementing genuine statisti
    ```
 
 2. **Set up your environment**:
-   Copy the example environment file and fill in your keys (especially `ANTHROPIC_API_KEY`).
+   Copy the example environment file and fill in your keys (especially `GEMINI_API_KEY`).
    ```bash
    cp .env.example .env
    ```

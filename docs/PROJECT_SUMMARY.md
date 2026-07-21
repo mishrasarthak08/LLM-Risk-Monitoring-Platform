@@ -51,6 +51,6 @@ The platform is now structurally complete, fully typed, linted, and covered by a
 
 To proceed with deploying this to a real environment, the next steps would involve:
 1. Provisioning the actual PostgreSQL database and configuring the Alembic connection strings.
-2. Replacing the mocked `mock_llm_call` implementations with live API calls to your provider (e.g., Anthropic, OpenAI).
+2. Replacing the mocked `mock_llm_call` implementations with live API calls to your provider (e.g., Gemini, OpenAI).
 3. Deploying the Streamlit application to an internal hosting provider.
 4. Hooking the GitHub Actions workflow into your live repository.
