@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
 import streamlit as st
 from dashboard.streamlit_app.queries import get_active_features, mock_drift_events, mock_calibration_status
 
