@@ -83,7 +83,7 @@ class RunTrace(Base):
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     trace_type: Mapped[str] = mapped_column(Text)
-    feature_name: Mapped[str] = mapped_column(Text)
+    feature_name: Mapped[str] = mapped_column(Text, index=True)
     prompt_version_id: Mapped[UUID] = mapped_column(
         ForeignKey("prompt_versions.id"))
     model_config_id: Mapped[UUID] = mapped_column(
@@ -102,7 +102,7 @@ class RunTrace(Base):
     parent_span_id: Mapped[Optional[UUID]] = mapped_column(nullable=True)
     error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now())
+        DateTime(timezone=True), server_default=func.now(), index=True)
 
 
 class JudgeVersion(Base):
@@ -124,7 +124,7 @@ class JudgeScore(Base):
     __tablename__ = "judge_scores"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
-    run_trace_id: Mapped[UUID] = mapped_column(ForeignKey("run_traces.id"))
+    run_trace_id: Mapped[UUID] = mapped_column(ForeignKey("run_traces.id"), index=True)
     judge_version_id: Mapped[UUID] = mapped_column(
         ForeignKey("judge_versions.id"))
     dimension: Mapped[str] = mapped_column(Text)
@@ -202,14 +202,14 @@ class DriftEvent(Base):
     __tablename__ = "drift_events"
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
-    feature_name: Mapped[str] = mapped_column(Text)
+    feature_name: Mapped[str] = mapped_column(Text, index=True)
     metric: Mapped[str] = mapped_column(Text)
     window_start: Mapped[datetime.datetime] = mapped_column(
-        DateTime(timezone=True))
+        DateTime(timezone=True), index=True)
     window_end: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True))
-    reference_distribution_id: Mapped[UUID] = mapped_column(
-        ForeignKey("drift_reference_distributions.id"))
+    reference_distribution_id: Mapped[Optional[UUID]] = mapped_column(
+        ForeignKey("drift_reference_distributions.id"), nullable=True)
     statistic_value: Mapped[float] = mapped_column(Numeric)
     threshold: Mapped[float] = mapped_column(Numeric)
     severity: Mapped[str] = mapped_column(Text)

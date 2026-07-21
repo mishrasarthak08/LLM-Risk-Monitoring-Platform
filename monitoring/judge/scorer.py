@@ -8,30 +8,47 @@ def load_rubric(rubric_path: str) -> Dict[str, Any]:
         return yaml.safe_load(f)
 
 
+from app.client import call_llm
+
 def _call_llm_judge(prompt: str, model: str) -> str:
     """
-    STUB: In a real environment, this calls the LLM API (e.g., Anthropic or OpenAI).
-    For now, it returns a mocked successful response.
+    Calls the real LLM judge, enforcing structured JSON output via prompt instructions.
+    Uses low temperature for consistent judging.
     """
-    # Mock response based on the requested JSON shape
-    if "Score 1 if every numeric claim" in prompt:
-        return '{"score": 1, "rationale": "All numeric claims match the source data."}'
-    elif "Score 1 if the memo remains objective" in prompt:
-        return '{"score": 1, "rationale": "No binding language was found."}'
-    elif "Score 1 if the memo contains a Summary" in prompt:
-        return '{"score": 1, "rationale": "All required sections are present."}'
-    elif "Rate the reasoning quality" in prompt:
-        return '{"score": 4, "rationale": "Reasoning is solid and references financials."}'
-    elif "Rate the tone and clarity" in prompt:
-        return '{"score": 5, "rationale": "Highly professional and well-hedged."}'
+    judge_config = {
+        "model_name": model,
+        "temperature": 0.0,
+        "max_tokens": 512
+    }
+    
+    json_prompt = (
+        f"{prompt}\n\n"
+        "You must evaluate the input and respond with ONLY a valid JSON object. "
+        "The JSON object must contain exactly two keys: 'score' (numeric) and 'rationale' (string). "
+        "Do not include markdown blocks or any other text before or after the JSON."
+    )
+    
+    output, _ = call_llm(json_prompt, judge_config)
+    
+    # Sometimes Claude wraps the json in markdown block even if told not to
+    output = output.strip()
+    if output.startswith("```json"):
+        output = output[7:]
+    if output.startswith("```"):
+        output = output[3:]
+    if output.endswith("```"):
+        output = output[:-3]
+        
+    return output.strip()
 
-    return '{"score": 1, "rationale": "Mock generic pass."}'
 
+from monitoring.judge.checks import check_deterministic_criteria
 
-def score_output(rubric: Dict[str, Any], source_data: dict, candidate_output: str) -> List[Dict[str, Any]]:
+def score_output(rubric: Dict[str, Any], source_data: dict, candidate_output: str, expected_criteria: Dict[str, Any] | None = None) -> List[Dict[str, Any]]:
     """
     Evaluates a candidate output against all dimensions defined in the rubric.
     Each dimension is scored in a separate LLM call to mitigate position and verbosity bias.
+    Also adds a deterministic criteria check.
     """
     results = []
 
@@ -61,5 +78,15 @@ def score_output(rubric: Dict[str, Any], source_data: dict, candidate_output: st
                 "raw_response": raw_response,
                 "error": str(e)
             })
+
+    # Add deterministic criteria check as an additional signal
+    det_result = check_deterministic_criteria(candidate_output, expected_criteria)
+    results.append({
+        "dimension": "deterministic_criteria",
+        "score": 1 if det_result["passed"] else 0,
+        "rationale": det_result["rationale"],
+        "raw_response": json.dumps(det_result),
+        "error": None
+    })
 
     return results

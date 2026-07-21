@@ -1,4 +1,4 @@
-judge_model: "claude-3-5-sonnet-20240620"
+judge_model: "gemini-2.5-flash"
 temperature: 0
 aggregation:
   gating_dimensions: [factual_accuracy, policy_compliance]

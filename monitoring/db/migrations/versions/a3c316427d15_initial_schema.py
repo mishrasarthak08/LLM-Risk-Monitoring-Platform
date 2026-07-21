@@ -20,7 +20,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    schema_path = os.path.join(os.path.dirname(__file__), '../schema.sql')
+    schema_path = os.path.join(os.path.dirname(__file__), '..', '..', 'schema.sql')
     with open(schema_path, 'r') as f:
         sql = f.read()
     op.execute(sql)

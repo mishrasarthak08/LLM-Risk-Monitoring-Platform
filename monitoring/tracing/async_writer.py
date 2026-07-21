@@ -1,12 +1,12 @@
 import queue
 import threading
-import logging
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from monitoring.db.models import RunTrace
+from monitoring.utils.json_logger import setup_json_logger
 
-logger = logging.getLogger(__name__)
+logger = setup_json_logger(__name__)
 
 # Bounded queue to avoid memory leaks
 trace_queue: queue.Queue = queue.Queue(maxsize=1000)
@@ -40,13 +40,20 @@ def worker():
         except Exception as e:
             # We swallow the error and log it to avoid breaking the background thread
             logger.error(f"Failed to write trace to DB: {e}")
+            import time
+            time.sleep(1)
+            # Re-enqueue the trace for retry
+            try:
+                trace_queue.put_nowait(trace_data)
+            except queue.Full:
+                pass
         finally:
             if trace_data is not None:
                 trace_queue.task_done()
 
 
 # Start the background worker thread (daemon so it doesn't block exit)
-writer_thread = threading.Thread(target=worker, daemon=True)
+writer_thread = threading.Thread(target=worker, daemon=True, name="writer_thread")
 writer_thread.start()
 
 

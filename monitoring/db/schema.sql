@@ -143,3 +143,9 @@ CREATE TABLE drift_events (
     acknowledged_at TIMESTAMPTZ,
     resolution_note TEXT
 );
+
+CREATE INDEX idx_run_traces_feature ON run_traces(feature_name);
+CREATE INDEX idx_run_traces_created_at ON run_traces(created_at);
+CREATE INDEX idx_drift_events_feature ON drift_events(feature_name);
+CREATE INDEX idx_drift_events_window_start ON drift_events(window_start);
+CREATE INDEX idx_judge_scores_run_trace_id ON judge_scores(run_trace_id);

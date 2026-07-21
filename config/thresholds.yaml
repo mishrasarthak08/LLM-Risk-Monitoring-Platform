@@ -26,3 +26,6 @@ drift_thresholds:
   psi_critical: 0.25
   output_length_ks_p_value: 0.05
   refusal_rate_z_p_value: 0.05
+
+rate_limits:
+  max_llm_calls_per_run: 50

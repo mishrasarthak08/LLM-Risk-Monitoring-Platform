@@ -1,7 +1,17 @@
 from monitoring.judge.scorer import score_output
 
 
-def test_score_output_parsing():
+def test_score_output_parsing(monkeypatch):
+    import json
+    def mock_call(prompt, model):
+        if "Score 1 if every numeric claim" in prompt:
+            return json.dumps({"score": 1, "rationale": "Perfect"})
+        elif "Rate the tone" in prompt:
+            return json.dumps({"score": 5, "rationale": "Clear"})
+        return "{}"
+        
+    monkeypatch.setattr("monitoring.judge.scorer._call_llm_judge", mock_call)
+    
     rubric = {
         "judge_model": "mock-model",
         "dimensions": [
@@ -21,11 +31,12 @@ def test_score_output_parsing():
 
     results = score_output(rubric, source_data, candidate_output)
 
-    assert len(results) == 2
+    assert len(results) == 3
 
     # Check first dimension
     fact_result = next(
         r for r in results if r["dimension"] == "factual_accuracy")
+    print("FACT_RESULT:", fact_result)
     assert fact_result["score"] == 1
     assert fact_result["error"] is None
 
@@ -50,7 +61,7 @@ def test_score_output_json_error(monkeypatch):
     }
 
     results = score_output(rubric, {}, "test")
-    assert len(results) == 1
+    assert len(results) == 2
     assert results[0]["score"] is None
     assert results[0]["error"] is not None
     assert "Expecting value" in results[0]["error"]

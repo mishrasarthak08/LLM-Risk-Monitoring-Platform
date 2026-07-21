@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -20,22 +22,26 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
         
+      - name: Fetch baseline prompt
+        run: |
+          git show ${{ github.event.pull_request.base.sha }}:app/feature/prompts/credit_memo_v1.yaml > /tmp/baseline_prompt.yaml
+          
       - name: Run regression suite against staging
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           export PYTHONPATH="."
           
-          # In a real environment, baseline would point to the deployed config.
-          # Here we just mock it using the same file for demonstration.
           python -c "
           import json
           from monitoring.regression.runner import run_regression_suite
           
           results = run_regression_suite(
               golden_set_path='monitoring/golden_set/data/v0001_credit_memo.jsonl',
-              baseline_prompt_path='app/feature/prompts/credit_memo_v1.yaml',
+              baseline_prompt_path='/tmp/baseline_prompt.yaml',
               candidate_prompt_path='app/feature/prompts/credit_memo_v1.yaml',
               rubric_path='monitoring/judge/rubric/credit_memo_rubric_v2.yaml',
-              repeats=1
+              repeats=2
           )
           
           with open('regression_output.json', 'w') as f:
