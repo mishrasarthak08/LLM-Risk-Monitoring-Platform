@@ -2,7 +2,8 @@ import os
 from monitoring.regression.runner import run_regression_suite
 from monitoring.db.models import Base
 from sqlalchemy import create_engine
-os.environ["DATABASE_URL"] = "postgresql://dev_user:dev_password@localhost:5435/llm_monitoring_dev"
+if "DATABASE_URL" not in os.environ:
+    os.environ["DATABASE_URL"] = "postgresql://dev_user:dev_password@localhost:5435/llm_monitoring_dev"
 
 # Create DB schema if it doesn't exist
 engine = create_engine(os.environ["DATABASE_URL"])

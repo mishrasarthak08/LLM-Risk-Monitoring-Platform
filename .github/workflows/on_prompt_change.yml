@@ -20,7 +20,9 @@ jobs:
           cache: 'pip'
           
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install --upgrade pip
+          pip install -e .[dev]
         
       - name: Fetch baseline prompt
         run: |
@@ -31,8 +33,6 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          export PYTHONPATH="."
-          
           python -c "
           import json
           from monitoring.regression.runner import run_regression_suite
@@ -55,7 +55,6 @@ jobs:
       - name: Generate Report
         if: always() # Run even if the previous step failed
         run: |
-          export PYTHONPATH="."
           python monitoring/regression/report_builder.py --data-file regression_output.json --output-file regression_report.md
           
       - name: Comment PR

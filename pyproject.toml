@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-risk-monitoring-platform"
+version = "0.1.0"
+description = "Production-grade LLM Prompt Regression and Drift Monitoring Platform"
+authors = [
+    { name = "Sarthak Mishra" }
+]
+requires-python = ">=3.11"
+readme = "README.md"
+dependencies = [
+    "streamlit>=1.36.0",
+    "sqlalchemy>=2.0.0",
+    "psycopg2-binary>=2.9.9",
+    "alembic>=1.13.0",
+    "google-genai>=0.4.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.7.0",
+    "pytest>=8.0.0",
+    "pyyaml>=6.0.1",
+    "scipy>=1.12.0",
+    "tenacity>=8.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "flake8>=7.0.0",
+    "mypy>=1.10.0",
+    "pytest-asyncio>=0.23.0"
+]
+
+[tool.setuptools.packages.find]
+include = ["app*", "monitoring*", "dashboard*", "ci*"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --tb=short"
+testpaths = [
+    "tests",
+]
+pythonpath = [
+    "."
+]
