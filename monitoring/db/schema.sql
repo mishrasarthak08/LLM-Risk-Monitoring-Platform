@@ -134,7 +134,7 @@ CREATE TABLE drift_events (
     metric TEXT NOT NULL,
     window_start TIMESTAMPTZ NOT NULL,
     window_end TIMESTAMPTZ NOT NULL,
-    reference_distribution_id UUID NOT NULL REFERENCES drift_reference_distributions(id),
+    reference_distribution_id UUID REFERENCES drift_reference_distributions(id),
     statistic_value NUMERIC NOT NULL,
     threshold NUMERIC NOT NULL,
     severity TEXT NOT NULL,

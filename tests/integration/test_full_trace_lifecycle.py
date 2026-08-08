@@ -21,7 +21,7 @@ def test_full_trace_lifecycle(mock_call_llm):
     with a non-null cost_usd and correct parent_span_id linkage.
     """
     # Setup mock returns to avoid real LLM calls and rate limits
-    mock_call_llm.return_value = ("Mocked credit memo content of sufficient length", {"total_tokens": 150})
+    mock_call_llm.return_value = ("Mocked credit memo content of sufficient length", {"input_tokens": 100, "output_tokens": 50})
 
 
     # Ensure traces queue is drained before test by waiting a bit if needed
