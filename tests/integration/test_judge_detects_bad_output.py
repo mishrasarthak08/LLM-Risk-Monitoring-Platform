@@ -6,11 +6,15 @@ from monitoring.judge.scorer import score_output
 from dotenv import load_dotenv
 load_dotenv()
 
-def test_judge_detects_bad_output():
+@patch("monitoring.judge.scorer.call_llm")
+def test_judge_detects_bad_output(mock_call_llm):
     """
     Asserts that score_output() handles bad candidate outputs and receives low scores.
     Also tests the deterministic fallback logic.
     """
+    # Return a mocked JSON output for the judge
+    mock_call_llm.return_value = ('{"score": 1, "rationale": "Refused to answer"}', {"total_tokens": 50})
+
     rubric = {
         "judge_model": "gemini-2.5-flash",
         "dimensions": [

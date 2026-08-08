@@ -12,7 +12,7 @@ lint:
 	mypy app monitoring dashboard scripts tests
 
 migrate:
-	alembic upgrade head
+	alembic -c monitoring/db/alembic.ini upgrade head
 
 seed-db:
 	python scripts/seed_mock_data.py

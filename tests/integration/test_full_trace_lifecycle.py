@@ -14,11 +14,15 @@ os.environ["DATABASE_URL"] = "postgresql+psycopg2://dev_user:dev_password@127.0.
 from dotenv import load_dotenv
 load_dotenv()
 
-def test_full_trace_lifecycle():
+@patch("app.feature.credit_memo.call_llm")
+def test_full_trace_lifecycle(mock_call_llm):
     """
     Call generate_credit_memo() and assert a matching row lands in run_traces,
     with a non-null cost_usd and correct parent_span_id linkage.
     """
+    # Setup mock returns to avoid real LLM calls and rate limits
+    mock_call_llm.return_value = ("Mocked credit memo content of sufficient length", {"total_tokens": 150})
+
 
     # Ensure traces queue is drained before test by waiting a bit if needed
     time.sleep(0.5)

@@ -21,17 +21,25 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -e .[dev]
+
+      - name: Start PostgreSQL Database
+        env:
+          DATABASE_URL: postgresql+psycopg2://dev_user:dev_password@127.0.0.1:5435/llm_monitoring_dev
+        run: |
+          docker compose up -d postgres
+          sleep 5 # Wait for DB to be ready
+          make migrate
 
       - name: Run Test Suite
         run: |
-          PYTHONPATH=. pytest tests/
+          make test
 
       - name: Run Alembic Migrations against Production
         env:
           DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
         run: |
-          PYTHONPATH=. alembic upgrade head
+          alembic -c monitoring/db/alembic.ini upgrade head
 
       - name: Trigger Streamlit Cloud Deploy
         # Assuming Streamlit Cloud is linked to the repository, it will auto-deploy on push to main.
@@ -44,4 +52,4 @@ jobs:
           DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          PYTHONPATH=. python ci/smoke_test.py
+          python ci/smoke_test.py
