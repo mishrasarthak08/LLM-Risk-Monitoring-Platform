@@ -31,7 +31,7 @@ def get_active_features():
             features = session.query(RunTrace.feature_name).distinct().all()
             return [f[0] for f in features] if features else ["credit_memo_v1"]
     except Exception as e:
-        st.sidebar.error("⚠️ Database connection failed. Please configure DATABASE_URL in Streamlit secrets.")
+        st.sidebar.error(f"⚠️ Database connection failed: {str(e)}")
         return ["credit_memo_v1"]
 
 def get_regression_history(feature: str):
