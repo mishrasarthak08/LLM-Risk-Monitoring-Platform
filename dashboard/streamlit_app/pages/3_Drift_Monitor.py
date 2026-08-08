@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
 import streamlit as st
-from dashboard.streamlit_app.queries import get_active_features, mock_drift_events
+from dashboard.streamlit_app.queries import get_active_features, get_drift_events
 
 st.set_page_config(page_title="Drift Monitor", layout="wide")
 st.title("🌊 Drift Monitor")
@@ -12,7 +12,7 @@ features = get_active_features()
 selected_feature = st.selectbox("Feature:", features)
 
 st.markdown("### Active Drift Alerts")
-drift_df = mock_drift_events(selected_feature)
+drift_df = get_drift_events(selected_feature)
 
 st.dataframe(drift_df, use_container_width=True)
 

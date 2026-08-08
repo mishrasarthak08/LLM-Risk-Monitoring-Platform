@@ -3,8 +3,9 @@ from unittest.mock import patch, MagicMock
 from app.feature.credit_memo import retrieve_documents, generate_credit_memo
 
 
+@patch('app.client.time.sleep')
 @patch('app.client.genai.Client')
-def test_kill_the_db_resilience(mock_client_cls):
+def test_kill_the_db_resilience(mock_client_cls, mock_sleep):
     """
     If the DB connection fails during resolving foreign keys,
     the decorator should still return the output quickly without throwing to the user.

@@ -17,7 +17,7 @@ def get_engine():
         pass
         
     if not db_url:
-        db_url = os.getenv("DATABASE_URL", "postgresql+psycopg2://dev_user:dev_password@localhost:5433/llm_monitoring_dev")
+        db_url = os.getenv("DATABASE_URL", "postgresql+psycopg2://dev_user:dev_password@localhost:5435/llm_monitoring_dev")
         
     return create_engine(db_url, pool_pre_ping=True)
 
@@ -34,7 +34,7 @@ def get_active_features():
         st.sidebar.error("⚠️ Database connection failed. Please configure DATABASE_URL in Streamlit secrets.")
         return ["credit_memo_v1"]
 
-def mock_regression_history(feature: str):
+def get_regression_history(feature: str):
     try:
         with get_session() as session:
             runs = session.query(RegressionRun).order_by(desc(RegressionRun.started_at)).limit(14).all()
@@ -57,7 +57,7 @@ def mock_regression_history(feature: str):
     except Exception:
         return pd.DataFrame(columns=["run_id", "date", "feature", "status", "pass_rate", "gate_decision"])
 
-def mock_run_traces(feature: str):
+def get_run_traces(feature: str):
     try:
         with get_session() as session:
             traces = session.query(RunTrace).filter(RunTrace.feature_name == feature).order_by(desc(RunTrace.created_at)).limit(50).all()
@@ -73,7 +73,7 @@ def mock_run_traces(feature: str):
     except Exception:
         return pd.DataFrame(columns=["trace_id", "timestamp", "latency_ms", "cost_usd", "has_error"])
 
-def mock_drift_events(feature: str):
+def get_drift_events(feature: str):
     try:
         with get_session() as session:
             events = session.query(DriftEvent).filter(DriftEvent.feature_name == feature).order_by(desc(DriftEvent.window_start)).limit(10).all()
@@ -89,7 +89,7 @@ def mock_drift_events(feature: str):
     except Exception:
         return pd.DataFrame(columns=["event_id", "timestamp", "metric", "severity", "status"])
 
-def mock_calibration_status(feature: str):
+def get_calibration_status(feature: str):
     try:
         with get_session() as session:
             judge = session.query(JudgeVersion).order_by(desc(JudgeVersion.created_at)).first()

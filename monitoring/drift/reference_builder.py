@@ -1,66 +1,81 @@
-
-import json
-from pathlib import Path
+import os
 from typing import Dict, Any, List
 from datetime import datetime
+import uuid
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-# Stubbed in-memory storage for our mock "reference distributions" table
-_MOCK_DB_FILE = Path("monitoring/drift/mock_reference_db.json")
+from monitoring.db.models import DriftReferenceDistribution
 
+def get_engine():
+    db_url = os.getenv(
+        "DATABASE_URL",
+        "postgresql+psycopg2://dev_user:dev_password@localhost:5432/llm_monitoring_dev"
+    )
+    return create_engine(db_url)
 
-def _load_mock_db() -> List[Dict[str, Any]]:
-    if not _MOCK_DB_FILE.exists():
-        return []
-    with open(_MOCK_DB_FILE, "r") as f:
-        try:
-            return json.load(f)
-        except json.JSONDecodeError:
-            return []
-
-
-def _save_mock_db(data: List[Dict[str, Any]]):
-    _MOCK_DB_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with open(_MOCK_DB_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+def get_session():
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=get_engine())
+    return SessionLocal()
 
 
 def build_reference_distribution(feature_name: str, metric: str, distribution_data: Any, start_time: str, end_time: str) -> str:
     """
     Builds a baseline reference distribution for a specific metric over a stable time window.
-    Saves it to the mock database.
+    Saves it to the real database table DriftReferenceDistribution.
     """
-    db = _load_mock_db()
+    session = get_session()
+    try:
+        # Mark existing active references for this feature/metric as superseded
+        active_refs = session.query(DriftReferenceDistribution).filter(
+            DriftReferenceDistribution.feature_name == feature_name,
+            DriftReferenceDistribution.metric == metric,
+            DriftReferenceDistribution.superseded_by == None
+        ).all()
+        
+        new_id = uuid.uuid4()
 
-    # Mark existing active references for this feature/metric as superseded
-    for ref in db:
-        if ref["feature_name"] == feature_name and ref["metric"] == metric and ref.get("superseded_by") is None:
-            # Simplified mock linking
-            ref["superseded_by"] = "NEW_REFERENCE_ID"
+        for ref in active_refs:
+            ref.superseded_by = new_id
 
-    new_id = f"ref_{len(db)+1}"
+        # The built_from_window is a TSTZRANGE. For psycopg2/sqlalchemy we can insert as a string or psycopg2 Range
+        # Let's format it as a postgres range string
+        range_str = f"[{start_time},{end_time}]"
 
-    new_reference = {
-        "id": new_id,
-        "feature_name": feature_name,
-        "metric": metric,
-        "distribution_summary": distribution_data,
-        "built_from_window": [start_time, end_time],
-        "superseded_by": None,
-        "created_at": datetime.utcnow().isoformat()
-    }
+        new_reference = DriftReferenceDistribution(
+            id=new_id,
+            feature_name=feature_name,
+            metric=metric,
+            distribution_summary=distribution_data,
+            built_from_window=range_str,
+            superseded_by=None
+        )
 
-    db.append(new_reference)
-    _save_mock_db(db)
+        session.add(new_reference)
+        session.commit()
 
-    return new_id
+        return str(new_id)
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
 
 
-def get_active_reference(feature_name: str, metric: str) -> list | None:
+def get_active_reference(feature_name: str, metric: str) -> list | dict | None:
     """
     Retrieves the currently active (not superseded) reference distribution data.
     """
-    db = _load_mock_db()
-    for ref in reversed(db):
-        if ref["feature_name"] == feature_name and ref["metric"] == metric and ref.get("superseded_by") is None:
-            return ref["distribution_summary"]
-    return None
+    session = get_session()
+    try:
+        active_ref = session.query(DriftReferenceDistribution).filter(
+            DriftReferenceDistribution.feature_name == feature_name,
+            DriftReferenceDistribution.metric == metric,
+            DriftReferenceDistribution.superseded_by == None
+        ).order_by(DriftReferenceDistribution.created_at.desc()).first()
+        
+        if active_ref:
+            return active_ref.distribution_summary
+        return None
+    finally:
+        session.close()

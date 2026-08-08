@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.
 
 import streamlit as st
 import pandas as pd
-from dashboard.streamlit_app.queries import get_active_features, mock_run_traces
+from dashboard.streamlit_app.queries import get_active_features, get_run_traces
 
 st.set_page_config(page_title="Run Explorer", layout="wide")
 st.title("🔍 Run Explorer")
@@ -13,7 +13,7 @@ features = get_active_features()
 selected_feature = st.selectbox("Feature:", features)
 
 st.markdown("### Recent Traces")
-traces_df = mock_run_traces(selected_feature)
+traces_df = get_run_traces(selected_feature)
 
 # Filter by error
 show_errors_only = st.checkbox("Show only traces with errors")

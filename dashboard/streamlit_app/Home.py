@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 import streamlit as st
-from dashboard.streamlit_app.queries import get_active_features, mock_drift_events, mock_calibration_status
+from dashboard.streamlit_app.queries import get_active_features, get_drift_events, get_calibration_status
 
 st.set_page_config(page_title="LLM Risk Monitoring", page_icon="🏦", layout="wide")
 
@@ -18,7 +18,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("⚠️ Active Drift Alerts")
-    drift_df = mock_drift_events(selected_feature)
+    drift_df = get_drift_events(selected_feature)
     open_alerts = drift_df[drift_df["status"] != "acknowledged"]
     if open_alerts.empty:
         st.success("No active drift alerts.")
@@ -28,7 +28,7 @@ with col1:
 
 with col2:
     st.subheader("⚖️ Judge Calibration Status")
-    cal_data = mock_calibration_status(selected_feature)
+    cal_data = get_calibration_status(selected_feature)
     
     if cal_data["status"] == "calibrated":
         st.success(f"Judge is fully calibrated (Last updated: {cal_data['last_updated']})")

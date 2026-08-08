@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: dev_password
       POSTGRES_DB: llm_monitoring_dev
     ports:
-      - "5433:5432"
+      - "5435:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -17,13 +17,23 @@ services:
     depends_on:
       - postgres
     ports:
-      - "3000:3000"
+      - "3002:3000"
     environment:
       - DATABASE_URL=postgresql://dev_user:dev_password@postgres:5432/llm_monitoring_dev
-      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_URL=http://localhost:3002
       - NEXTAUTH_SECRET=mysecret
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - SALT=mysalt
+
+  dashboard:
+    build: .
+    ports:
+      - "8501:8501"
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://dev_user:dev_password@postgres:5432/llm_monitoring_dev
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
 
 volumes:
   pgdata:

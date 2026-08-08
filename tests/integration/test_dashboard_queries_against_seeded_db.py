@@ -11,7 +11,7 @@ from monitoring.db.models import RunTrace, JudgeScore, DriftEvent, PromptVersion
 def db_session():
     # Use the integration test DB
     os.environ["DATABASE_URL"] = os.environ.get(
-        "DATABASE_URL", "postgresql+psycopg2://dev_user:dev_password@127.0.0.1:5433/llm_monitoring_dev"
+        "DATABASE_URL", "postgresql+psycopg2://dev_user:dev_password@127.0.0.1:5435/llm_monitoring_dev"
     )
     engine = create_engine(os.environ["DATABASE_URL"])
     Session = sessionmaker(bind=engine)

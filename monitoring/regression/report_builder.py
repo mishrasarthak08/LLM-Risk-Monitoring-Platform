@@ -36,7 +36,9 @@ def generate_markdown_report(regression_data: Dict[str, Any]) -> str:
             md.append(f"- **Category**: {c['category']}")
             md.append(f"- **Severity**: {c['severity']}")
             md.append(
-                f"- **Delta**: {c['delta']:+.2f} (Base: {c['baseline_score']}, Cand: {c['candidate_score']})")
+                f"- **Delta**: {c['delta']:+.2f} "
+                f"(Base: {c['baseline_score']}, Cand: {c['candidate_score']})"
+            )
             md.append("")
 
     return "\n".join(md)
@@ -44,10 +46,14 @@ def generate_markdown_report(regression_data: Dict[str, Any]) -> str:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data-file", required=True,
-                        help="JSON file output from runner")
-    parser.add_argument("--output-file", required=True,
-                        help="Markdown file to write")
+    parser.add_argument(
+        "--data-file", required=True,
+        help="JSON file output from runner"
+    )
+    parser.add_argument(
+        "--output-file", required=True,
+        help="Markdown file to write"
+    )
     args = parser.parse_args()
 
     with open(args.data_file, "r") as f:

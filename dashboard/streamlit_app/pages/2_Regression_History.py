@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.
 import streamlit as st
 import pandas as pd
 import altair as alt
-from dashboard.streamlit_app.queries import get_active_features, mock_regression_history
+from dashboard.streamlit_app.queries import get_active_features, get_regression_history
 
 st.set_page_config(page_title="Regression History", layout="wide")
 st.title("📈 Regression History & Failure Analysis")
@@ -14,7 +14,7 @@ features = get_active_features()
 selected_feature = st.selectbox("Feature:", features)
 
 st.markdown("### Historical Pass Rate")
-reg_df = mock_regression_history(selected_feature)
+reg_df = get_regression_history(selected_feature)
 
 # Chart
 chart = alt.Chart(reg_df).mark_line(point=True).encode(

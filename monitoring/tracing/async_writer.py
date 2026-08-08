@@ -19,10 +19,13 @@ def get_session():
     global _engine, _SessionLocal
     if _engine is None:
         db_url = os.getenv(
-            "DATABASE_URL", "postgresql+psycopg2://dev_user:dev_password@localhost:5432/llm_monitoring_dev")
+            "DATABASE_URL",
+            "postgresql+psycopg2://dev_user:dev_password@localhost:5432/llm_monitoring_dev"
+        )
         _engine = create_engine(db_url, pool_pre_ping=True)
         _SessionLocal = sessionmaker(
-            autocommit=False, autoflush=False, bind=_engine)
+            autocommit=False, autoflush=False, bind=_engine
+        )
     return _SessionLocal()
 
 

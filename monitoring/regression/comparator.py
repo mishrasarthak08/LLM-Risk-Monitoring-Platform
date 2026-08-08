@@ -13,7 +13,13 @@ class CaseComparison:
     verdict: str  # improved | unchanged | regressed | newly_failing | newly_passing
 
 
-def compare_case(case_id: str, severity: str, baseline_score: float, candidate_score: float, pass_threshold: float = 0.7) -> CaseComparison:
+def compare_case(
+    case_id: str,
+    severity: str,
+    baseline_score: float,
+    candidate_score: float,
+    pass_threshold: float = 0.7
+) -> CaseComparison:
     delta = candidate_score - baseline_score
     was_passing = baseline_score >= pass_threshold
     now_passing = candidate_score >= pass_threshold
@@ -57,21 +63,30 @@ def gate_decision(comparisons: List[CaseComparison]) -> Dict[str, Any]:
     if blocking_newly_failing:
         return {
             "decision": "block",
-            "reason": f"{len(blocking_newly_failing)} blocking-severity case(s) newly failing",
+            "reason": (
+                f"{len(blocking_newly_failing)} "
+                f"blocking-severity case(s) newly failing"
+            ),
             "p_value": p_value
         }
 
     if len(major_newly_failing) >= 3:
         return {
             "decision": "block",
-            "reason": f"{len(major_newly_failing)} major-severity cases newly failing (threshold: 3)",
+            "reason": (
+                f"{len(major_newly_failing)} "
+                f"major-severity cases newly failing (threshold: 3)"
+            ),
             "p_value": p_value
         }
 
     if p_value < 0.05 and sum(c.delta for c in comparisons) < 0:
         return {
             "decision": "allow_with_warning",
-            "reason": "Statistically significant net score decline, no individual blocking failures",
+            "reason": (
+                "Statistically significant net score decline, "
+                "no individual blocking failures"
+            ),
             "p_value": p_value
         }
 

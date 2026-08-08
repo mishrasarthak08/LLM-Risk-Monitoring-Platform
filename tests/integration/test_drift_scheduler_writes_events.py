@@ -34,7 +34,7 @@ def test_drift_scheduler_writes_events(mock_fetch, mock_get_ref):
     mock_fetch.side_effect = side_effect_fetch
     
     # DB Session
-    os.environ["DATABASE_URL"] = "postgresql+psycopg2://dev_user:dev_password@127.0.0.1:5433/llm_monitoring_dev"
+    os.environ["DATABASE_URL"] = "postgresql+psycopg2://dev_user:dev_password@127.0.0.1:5435/llm_monitoring_dev"
     engine = create_engine(os.environ["DATABASE_URL"])
     Session = sessionmaker(bind=engine)
     

@@ -8,7 +8,7 @@ from app.feature.credit_memo import generate_credit_memo
 from monitoring.db.models import RunTrace
 
 # Ensure we use the test database
-os.environ["DATABASE_URL"] = "postgresql+psycopg2://dev_user:dev_password@127.0.0.1:5433/llm_monitoring_dev"
+os.environ["DATABASE_URL"] = "postgresql+psycopg2://dev_user:dev_password@127.0.0.1:5435/llm_monitoring_dev"
 
 
 from dotenv import load_dotenv
