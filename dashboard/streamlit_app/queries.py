@@ -19,6 +19,9 @@ def get_engine():
     if not db_url:
         db_url = os.getenv("DATABASE_URL", "postgresql+psycopg2://dev_user:dev_password@localhost:5435/llm_monitoring_dev")
         
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+        
     return create_engine(db_url, pool_pre_ping=True)
 
 def get_session():
