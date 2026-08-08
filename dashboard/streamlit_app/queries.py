@@ -109,7 +109,8 @@ def get_calibration_status(feature: str):
                     "passed": [judge.calibration_status == "calibrated"]
                 })
             }
-    except Exception:
+    except Exception as e:
+        st.sidebar.error(f"Error in get_calibration_status: {e}")
         return {
             "status": "pending",
             "last_updated": "never",
