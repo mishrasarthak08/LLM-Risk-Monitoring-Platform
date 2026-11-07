@@ -13,34 +13,61 @@ import {
   Scale,
   ShieldCheck,
   FileText,
-  Settings,
-  Building2,
+  FolderKanban,
   ChevronRight,
   Globe,
   Sparkles,
-  Key,
-  FolderKanban,
+  BookOpen,
+  KeyRound,
 } from "lucide-react";
 
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ElementType;
-  badge?: string;
+interface NavGroup {
+  category: string;
+  items: {
+    label: string;
+    href: string;
+    icon: React.ElementType;
+    badge?: string;
+  }[];
 }
 
-const navItems: NavItem[] = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Projects & Keys", href: "/projects", icon: FolderKanban },
-  { label: "Trace Explorer", href: "/traces", icon: Activity },
-  { label: "Evaluation Studio", href: "/evaluations", icon: Sparkles },
-  { label: "Prompt Registry", href: "/prompts", icon: FileCode2 },
-  { label: "Golden Datasets", href: "/datasets", icon: Database },
-  { label: "Regression CI Gate", href: "/regressions", icon: GitCompare },
-  { label: "Drift Monitor", href: "/drift", icon: Waves, badge: "1 Alert" },
-  { label: "Judge Calibration", href: "/calibration", icon: Scale },
-  { label: "Cryptographic Audit", href: "/audit", icon: ShieldCheck },
-  { label: "Governance Dossier", href: "/reports", icon: FileText },
+const navGroups: NavGroup[] = [
+  {
+    category: "WORKSPACE",
+    items: [
+      { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+      { label: "Projects & Keys", href: "/projects", icon: FolderKanban },
+    ],
+  },
+  {
+    category: "OBSERVABILITY",
+    items: [
+      { label: "Trace Explorer", href: "/traces", icon: Activity },
+    ],
+  },
+  {
+    category: "QUALITY",
+    items: [
+      { label: "Evaluation Studio", href: "/evaluations", icon: Sparkles },
+      { label: "Golden Datasets", href: "/datasets", icon: Database },
+      { label: "Prompt Registry", href: "/prompts", icon: FileCode2 },
+      { label: "Regression CI Gate", href: "/regressions", icon: GitCompare },
+    ],
+  },
+  {
+    category: "RELIABILITY",
+    items: [
+      { label: "Drift Monitoring", href: "/drift", icon: Waves, badge: "1 Alert" },
+    ],
+  },
+  {
+    category: "GOVERNANCE",
+    items: [
+      { label: "Judge Calibration", href: "/calibration", icon: Scale },
+      { label: "Cryptographic Audit", href: "/audit", icon: ShieldCheck },
+      { label: "Governance Dossier", href: "/reports", icon: FileText },
+    ],
+  },
 ];
 
 export function Sidebar() {
@@ -61,47 +88,54 @@ export function Sidebar() {
         </Link>
       </div>
 
-      {/* Project Switcher Pill */}
-      <div className="px-3 pt-4 pb-2">
-        <div className="bg-slate-900 border border-slate-800 rounded-lg p-2.5 flex items-center justify-between text-xs text-slate-300">
+      {/* Workspace Indicator */}
+      <div className="px-3 pt-3 pb-2">
+        <Link
+          href="/projects"
+          className="bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-lg p-2.5 flex items-center justify-between text-xs text-slate-300 transition-colors"
+        >
           <div className="flex items-center space-x-2 truncate">
-            <Building2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-            <span className="truncate font-medium text-slate-200">Credit Memo Underwriting</span>
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span className="truncate font-medium text-slate-200">Commercial Credit Copilot</span>
           </div>
           <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-mono">PROD</span>
-        </div>
+        </Link>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
-        <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-2 pt-2 pb-1">
-          Operations & Gating
-        </div>
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center justify-between px-2.5 py-2 rounded-md text-xs font-medium transition-colors ${
-                isActive
-                  ? "bg-indigo-600/15 text-indigo-400 border border-indigo-500/30"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
-              }`}
-            >
-              <div className="flex items-center space-x-2.5">
-                <Icon className={`w-4 h-4 ${isActive ? "text-indigo-400" : "text-slate-400"}`} />
-                <span>{item.label}</span>
-              </div>
-              {item.badge && (
-                <span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-full font-medium">
-                  {item.badge}
-                </span>
-              )}
-            </Link>
-          );
-        })}
+      {/* Navigation Groups */}
+      <nav className="flex-1 px-3 py-1 space-y-4 overflow-y-auto">
+        {navGroups.map((group) => (
+          <div key={group.category} className="space-y-1">
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-2 pt-1 pb-0.5">
+              {group.category}
+            </div>
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    isActive
+                      ? "bg-indigo-600/15 text-indigo-400 border border-indigo-500/30"
+                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
+                  }`}
+                >
+                  <div className="flex items-center space-x-2.5">
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? "text-indigo-400" : "text-slate-400"}`} />
+                    <span>{item.label}</span>
+                  </div>
+                  {item.badge && (
+                    <span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-full font-medium">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* Public Marketing Link */}
@@ -120,7 +154,7 @@ export function Sidebar() {
 
       {/* Footer System Status */}
       <div className="p-3 border-t border-slate-800 bg-slate-950/50">
-        <div className="flex items-center justify-between text-[11px] text-slate-400 px-2 py-1.5">
+        <div className="flex items-center justify-between text-[11px] text-slate-400 px-2 py-1">
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="font-medium text-slate-300">SR 11-7 Controls</span>
@@ -133,4 +167,3 @@ export function Sidebar() {
     </aside>
   );
 }
-

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, CheckCircle2, User, Key, Bell, ExternalLink, Search, LogOut } from "lucide-react";
+import { ShieldCheck, CheckCircle2, User, Key, Bell, ExternalLink, Search, LogOut, Sun, Moon } from "lucide-react";
 
 interface HeaderProps {
   title: string;
@@ -14,6 +14,7 @@ export function Header({ title, subtitle }: HeaderProps) {
   const [userRole, setUserRole] = useState("Model Risk Officer");
   const [initials, setInitials] = useState("SJ");
   const [showMenu, setShowMenu] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const router = useRouter();
 
   useEffect(() => {
@@ -32,11 +33,31 @@ export function Header({ title, subtitle }: HeaderProps) {
             setUserRole(user.email);
           }
         }
+        const savedTheme = (localStorage.getItem("veritas_theme") as "dark" | "light") || "dark";
+        setTheme(savedTheme);
+        if (savedTheme === "light") {
+          document.documentElement.classList.remove("dark");
+        } else {
+          document.documentElement.classList.add("dark");
+        }
       } catch {
         // Fallback default
       }
     }
   }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("veritas_theme", nextTheme);
+      if (nextTheme === "light") {
+        document.documentElement.classList.remove("dark");
+      } else {
+        document.documentElement.classList.add("dark");
+      }
+    }
+  };
 
   const handleSignOut = () => {
     if (typeof window !== "undefined") {
@@ -68,6 +89,16 @@ export function Header({ title, subtitle }: HeaderProps) {
           <kbd className="text-[10px] font-mono text-slate-500 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
             ⌘K
           </kbd>
+        </button>
+
+        {/* Theme Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          aria-label="Toggle visual theme"
+          className="p-1.5 text-slate-400 hover:text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg transition-colors cursor-pointer"
+          title={theme === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"}
+        >
+          {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-400" />}
         </button>
 
         {/* Verification Status Pill */}
