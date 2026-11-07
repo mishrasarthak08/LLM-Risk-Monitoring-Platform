@@ -2,38 +2,77 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
+    container_name: veritas_postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: dev_user
       POSTGRES_PASSWORD: dev_password
-      POSTGRES_DB: llm_monitoring_dev
+      POSTGRES_DB: veritas_ai_dev
     ports:
-      - "5435:5432"
+      - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - veritas_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev_user -d veritas_ai_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  langfuse-server:
-    image: langfuse/langfuse:latest
-    depends_on:
-      - postgres
+  redis:
+    image: redis:7-alpine
+    container_name: veritas_redis
+    restart: unless-stopped
     ports:
-      - "3002:3000"
-    environment:
-      - DATABASE_URL=postgresql://dev_user:dev_password@postgres:5432/llm_monitoring_dev
-      - NEXTAUTH_URL=http://localhost:3002
-      - NEXTAUTH_SECRET=mysecret
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - SALT=mysalt
+      - "6379:6379"
 
-  dashboard:
-    build: .
-    ports:
-      - "8501:8501"
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: veritas_backend
+    restart: unless-stopped
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     environment:
-      - DATABASE_URL=postgresql+psycopg2://dev_user:dev_password@postgres:5432/llm_monitoring_dev
+      - DATABASE_URL=postgresql+psycopg2://dev_user:dev_password@postgres:5432/veritas_ai_dev
+      - REDIS_URL=redis://redis:6379/0
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DEFAULT_PROVIDER=simulated
+    ports:
+      - "8000:8000"
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A backend.app.worker.celery_app worker --loglevel=info
+    container_name: veritas_worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://dev_user:dev_password@postgres:5432/veritas_ai_dev
+      - REDIS_URL=redis://redis:6379/0
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: veritas_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000/api/v1
+    ports:
+      - "3000:3000"
 
 volumes:
-  pgdata:
+  veritas_pgdata:

@@ -1,0 +1,14 @@
+{
+  "name": "@veritas-ai/sdk",
+  "version": "2.0.0",
+  "description": "Official TypeScript & Node.js SDK for VERITAS AI",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": ["llm", "observability", "governance", "monitoring", "tracing", "veritas"],
+  "author": "VERITAS AI Inc.",
+  "license": "Apache-2.0"
+}
+

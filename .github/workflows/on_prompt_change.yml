@@ -1,65 +1,40 @@
-name: LLM Regression Gate
+name: VERITAS AI — LLM Regression Gate
 on:
   pull_request:
     paths:
       - 'app/feature/prompts/**'
-      - 'app/feature/model_config.yaml'
+      - 'config/model_pricing.yaml'
+      - 'config/thresholds.yaml'
 
 jobs:
-  regression:
+  regression_gate:
+    name: Evaluate Prompt Changes & Statistical Gating
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
-      - name: Setup Python
+
+      - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'pip'
-          
-      - name: Install dependencies
+
+      - name: Install Dependencies
         run: |
-          pip install --upgrade pip
-          pip install -e .[dev]
-        
-      - name: Fetch baseline prompt
+          python -m pip install --upgrade pip
+          pip install uv
+          uv pip install --system -r requirements.txt
+
+      - name: Fetch Baseline Prompt from Target Branch
         run: |
           git show ${{ github.event.pull_request.base.sha }}:app/feature/prompts/credit_memo_v1.yaml > /tmp/baseline_prompt.yaml
-          
-      - name: Run regression suite against staging
+
+      - name: Execute Regression Engine & Wilcoxon Statistical Gate
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          python -c "
-          import json
-          from monitoring.regression.runner import run_regression_suite
-          
-          results = run_regression_suite(
-              golden_set_path='monitoring/golden_set/data/v0001_credit_memo.jsonl',
-              baseline_prompt_path='/tmp/baseline_prompt.yaml',
-              candidate_prompt_path='app/feature/prompts/credit_memo_v1.yaml',
-              rubric_path='monitoring/judge/rubric/credit_memo_rubric_v2.yaml',
-              repeats=2
-          )
-          
-          with open('regression_output.json', 'w') as f:
-              json.dump(results, f)
-              
-          if results['gate_decision']['decision'] == 'block':
-              exit(1)
-          "
-          
-      - name: Generate Report
-        if: always() # Run even if the previous step failed
-        run: |
-          python monitoring/regression/report_builder.py --data-file regression_output.json --output-file regression_report.md
-          
-      - name: Comment PR
-        if: always()
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          filePath: regression_report.md
-          comment_tag: regression_report
+          python ci/veritas_ci.py \
+            --baseline /tmp/baseline_prompt.yaml \
+            --candidate app/feature/prompts/credit_memo_v1.yaml \
+            --dataset monitoring/golden_set/data/v0001_credit_memo.jsonl

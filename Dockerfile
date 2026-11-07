@@ -1,22 +1,22 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install system dependencies needed for psycopg2, etc.
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire codebase
-COPY . .
+COPY backend/ ./backend/
+COPY config/ ./config/
+COPY monitoring/ ./monitoring/
+COPY app/ ./app/
+COPY ci/ ./ci/
 
-# Ensure PYTHONPATH is set so absolute imports work
-ENV PYTHONPATH=/app
+EXPOSE 8000
 
-EXPOSE 8501
-
-ENTRYPOINT ["streamlit", "run", "dashboard/streamlit_app/Home.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]

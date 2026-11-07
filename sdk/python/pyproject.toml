@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "veritas-ai"
+version = "2.0.0"
+description = "Official Python SDK for VERITAS AI — Enterprise LLM Reliability & Governance Infrastructure"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "VERITAS AI Engineering", email = "engineering@veritas.ai" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: System :: Monitoring",
+]
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["veritas*"]
+
