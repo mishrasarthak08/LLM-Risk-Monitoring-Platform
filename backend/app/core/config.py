@@ -2,8 +2,8 @@
 VERITAS AI — Core Configuration & Environment Settings
 """
 import os
-from typing import List, Optional
-from pydantic import Field
+from typing import List, Optional, Union
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -26,6 +26,16 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+psycopg2://localhost:5432/veritas_ai_dev"
     SQL_ECHO: bool = False
 
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def fix_database_url(cls, v: str) -> str:
+        if isinstance(v, str):
+            if v.startswith("postgres://"):
+                return v.replace("postgres://", "postgresql+psycopg2://", 1)
+            elif v.startswith("postgresql://") and not v.startswith("postgresql+"):
+                return v.replace("postgresql://", "postgresql+psycopg2://", 1)
+        return v
+
     # Redis / Background
     REDIS_URL: str = "redis://localhost:6379/0"
 
@@ -41,7 +51,15 @@ class Settings(BaseSettings):
         "http://localhost:8000",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:8000",
+        "*",
     ]
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        if isinstance(v, str):
+            return [x.strip() for x in v.split(",") if x.strip()]
+        return v
 
     # Redaction & Privacy
     REDACT_SENSITIVE_DATA: bool = True

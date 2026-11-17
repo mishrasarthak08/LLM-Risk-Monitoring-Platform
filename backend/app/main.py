@@ -5,6 +5,7 @@ Enterprise LLM Reliability, Evaluation, Observability, and Governance Platform.
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
 import time
 
 from backend.app.core.config import settings
@@ -23,12 +24,24 @@ from backend.app.api.v1 import (
     reports
 )
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Auto-create tables in cloud DB on startup
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"[VERITAS AI] Database schema auto-creation notice: {e}")
+    yield
+
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description="Enterprise LLM Reliability, Evaluation, Observability, and Governance Platform (SR 11-7 / OCC 2011-12 compliant)",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # CORS

@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: veritas-ai-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: DEFAULT_PROVIDER
+        value: simulated
