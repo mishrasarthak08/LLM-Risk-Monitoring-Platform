@@ -1,0 +1,12 @@
+{
+  "name": "veritas-ai-platform",
+  "version": "2.0.0",
+  "private": true,
+  "description": "VERITAS AI — Enterprise LLM Reliability, Evaluation, Observability & Governance Platform",
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "start": "npm run start --prefix frontend",
+    "dev": "npm run dev --prefix frontend",
+    "install": "npm install --prefix frontend"
+  }
+}
