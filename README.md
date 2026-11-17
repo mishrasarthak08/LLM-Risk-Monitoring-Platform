@@ -12,6 +12,17 @@
 
 ---
 
+## ☁️ 1-Click Free Cloud Deployment
+
+Deploy the entire full-stack platform (Database + Backend API + Frontend Client) to free cloud infrastructure with zero local server requirements:
+
+| Component | Free Cloud Host | 1-Click Deploy Action |
+| :--- | :--- | :--- |
+| **Backend API & PostgreSQL** | **Render** *(Free Web + DB)* | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/mishrasarthak08/LLM-Risk-Monitoring-Platform) |
+| **Frontend Web Application** | **Vercel** *(Free Edge)* | [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmishrasarthak08%2FLLM-Risk-Monitoring-Platform&root-directory=frontend&env=NEXT_PUBLIC_API_URL&envDescription=Enter%20your%20Render%20backend%20URL%20followed%20by%20/api/v1%20(e.g.%20https://veritas-ai-backend.onrender.com/api/v1)) |
+
+---
+
 ## 🏗️ System Architecture
 
 VERITAS AI is engineered as a modern, decoupled modular monolith:

@@ -1,3 +1,9 @@
+databases:
+  - name: veritas-ai-db
+    plan: free
+    databaseName: veritas_ai_dev
+    user: veritas_user
+
 services:
   - type: web
     name: veritas-ai-backend
@@ -15,8 +21,10 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: veritas-ai-db
+          property: connectionString
       - key: REDIS_URL
-        sync: false
+        value: redis://localhost:6379/0
       - key: DEFAULT_PROVIDER
         value: simulated
