@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def fix_database_url(cls, v: str) -> str:
+        if not v or (isinstance(v, str) and v.strip() == ""):
+            return "sqlite:///./veritas_ai.db"
         if isinstance(v, str):
             if v.startswith("postgres://"):
                 return v.replace("postgres://", "postgresql+psycopg2://", 1)
